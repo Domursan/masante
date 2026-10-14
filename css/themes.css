@@ -1,0 +1,102 @@
+/* MA SANTÉ — Thèmes
+   Chaque couleur définit une palette COMPLÈTE (fond, surfaces, bordures, textes, accent),
+   en clair et en sombre. Les couleurs d'état (ok / attention / danger) restent sémantiques. */
+
+:root {
+  --radius: 14px;
+  /* états — clair */
+  --ok: #15803d;      --ok-bg: #dcfce7;
+  --warn: #b45309;    --warn-bg: #fef3c7;
+  --danger: #c81e1e;  --danger-bg: #fee2e2;
+  --p-ink: #ffffff;
+  color-scheme: light;
+}
+
+/* ================= MODE CLAIR ================= */
+[data-couleur="bleu"] {
+  --p: #2563eb; --p-soft: #dbe7fe; --p-print: #2563eb;
+  --bg: #eef3fc; --bg-accent: #d5e3fd; --bg-accent2: #e4ecfb;
+  --surface: #ffffff; --surface2: #e8effb; --border: #d3def2;
+  --text: #12203a; --muted: #536381;
+  --shadow: 0 1px 2px rgba(18, 32, 58, .06), 0 6px 18px rgba(37, 99, 235, .08);
+}
+[data-couleur="rouge"] {
+  --p: #c8283f; --p-soft: #fde0e5; --p-print: #c8283f;
+  --bg: #fcf1f2; --bg-accent: #fbd5dc; --bg-accent2: #f9e4e7;
+  --surface: #fffcfc; --surface2: #f9e5e8; --border: #efd0d5;
+  --text: #2b1216; --muted: #7b5960;
+  --shadow: 0 1px 2px rgba(43, 18, 22, .06), 0 6px 18px rgba(200, 40, 63, .08);
+}
+[data-couleur="vert"] {
+  --p: #15803d; --p-soft: #d6f2df; --p-print: #15803d;
+  --bg: #eff7f1; --bg-accent: #cdebd7; --bg-accent2: #e0f0e5;
+  --surface: #fcfffd; --surface2: #e2f1e7; --border: #cde4d4;
+  --text: #11261a; --muted: #50705c;
+  --shadow: 0 1px 2px rgba(17, 38, 26, .06), 0 6px 18px rgba(21, 128, 61, .08);
+}
+[data-couleur="magenta"] {
+  --p: #b5179e; --p-soft: #f8dbf3; --p-print: #b5179e;
+  --bg: #fbf0f9; --bg-accent: #f4d2ee; --bg-accent2: #f6e3f3;
+  --surface: #fffcfe; --surface2: #f5e3f2; --border: #eacde5;
+  --text: #2a1027; --muted: #765672;
+  --shadow: 0 1px 2px rgba(42, 16, 39, .06), 0 6px 18px rgba(181, 23, 158, .08);
+}
+
+/* ================= MODE SOMBRE ================= */
+[data-mode="sombre"] {
+  --ok: #4ade80;     --ok-bg: #11301e;
+  --warn: #fbbf24;   --warn-bg: #3a2c0b;
+  --danger: #f87171; --danger-bg: #3d1518;
+  color-scheme: dark;
+}
+[data-mode="sombre"][data-couleur="bleu"] {
+  --p: #6ea8fe; --p-ink: #081730; --p-soft: #1b2b4d;
+  --bg: #0b111e; --bg-accent: #15274a; --bg-accent2: #101b33;
+  --surface: #131b2c; --surface2: #1c273d; --border: #293756;
+  --text: #e6edf9; --muted: #9aabc9;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .3);
+}
+[data-mode="sombre"][data-couleur="rouge"] {
+  --p: #f2667a; --p-ink: #1d0a0e; --p-soft: #3e1b22;
+  --bg: #160a0d; --bg-accent: #3a131b; --bg-accent2: #241015;
+  --surface: #211115; --surface2: #2e1a1f; --border: #482930;
+  --text: #f7e9eb; --muted: #c39ba2;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .3);
+}
+[data-mode="sombre"][data-couleur="vert"] {
+  --p: #4ade80; --p-ink: #062012; --p-soft: #12301f;
+  --bg: #07130c; --bg-accent: #11351f; --bg-accent2: #0c2014;
+  --surface: #0e1e15; --surface2: #162b1f; --border: #233f2e;
+  --text: #e5f5ea; --muted: #93b8a0;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .3);
+}
+[data-mode="sombre"][data-couleur="magenta"] {
+  --p: #ec7ff0; --p-ink: #25082a; --p-soft: #3a1a3d;
+  --bg: #140914; --bg-accent: #3a1438; --bg-accent2: #231022;
+  --surface: #20101e; --surface2: #2d192b; --border: #482944;
+  --text: #f8e8f5; --muted: #c49cbd;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .3);
+}
+
+/* ================= DALTONIEN =================
+   États en bleu / orange / bordeaux (distinguables pour toutes les formes de daltonisme),
+   toujours accompagnés d'une icône. */
+[data-daltonien="oui"] {
+  --ok: #0063a3;     --ok-bg: #dceefa;
+  --warn: #a35f00;   --warn-bg: #fdf0d5;
+  --danger: #882255; --danger-bg: #f6e1ec;
+}
+[data-daltonien="oui"][data-mode="sombre"] {
+  --ok: #56b4e9;     --ok-bg: #0f2a3b;
+  --warn: #e69f00;   --warn-bg: #3a2a05;
+  --danger: #e38bbb; --danger-bg: #3a1a2c;
+}
+
+/* Fond teinté selon le thème (dégradés doux) */
+body {
+  background:
+    radial-gradient(900px 520px at 100% -10%, var(--bg-accent), transparent 65%),
+    radial-gradient(700px 480px at -10% 110%, var(--bg-accent2), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+}
