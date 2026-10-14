@@ -62,7 +62,7 @@ var App = {
     S.ro = r.user.id !== r.me.id;
     S.params = r.params || {};
     S.users = r.users || [];
-    S.data = { ordonnances: r.ordonnances || [], prises: r.prises || [], signes: r.signes || [], schema: r.schema || [], notes: r.notes || [] };
+    S.data = { ordonnances: r.ordonnances || [], prises: r.prises || [], signes: r.signes || [], schema: r.schema || [], notes: r.notes || [], fiche: r.fiche || {} };
     Themes.apply(S.me);
     App.branding();
     App.header();
@@ -159,7 +159,7 @@ var App = {
   reset(verrou = false) {
     API.setToken(null);
     S.me = null; S.viewing = null; S.ro = false; S.users = [];
-    S.data = { ordonnances: [], prises: [], signes: [], schema: [], notes: [] };
+    S.data = { ordonnances: [], prises: [], signes: [], schema: [], notes: [], fiche: {} };
     Photos.cache = {};
     if (verrou) { UI.$('#app').classList.add('hidden'); return; }
     location.hash = '';
