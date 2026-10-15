@@ -31,6 +31,7 @@ Pages.admin = {
             <div class="grid2">
               <label>Alerte de renouvellement (jours avant la fin)<input type="number" name="notif_jours" min="1" max="120" value="${UI.esc(p.notif_jours || '15')}"></label>
               <label>Alerte de stock bas par défaut (jours restants)<input type="number" name="stock_alerte_jours" min="1" max="60" value="${UI.esc(p.stock_alerte_jours || '7')}"></label>
+              <label>Alerte de rappel de vaccin (jours avant)<input type="number" name="vaccin_alerte_jours" min="1" max="180" value="${UI.esc(p.vaccin_alerte_jours || '30')}"></label>
               <label>Unité de glycémie<select name="unite_glycemie">
                 <option value="mmol/L" ${p.unite_glycemie !== 'mg/dL' ? 'selected' : ''}>mmol/L</option>
                 <option value="mg/dL" ${p.unite_glycemie === 'mg/dL' ? 'selected' : ''}>mg/dL</option></select></label>
@@ -40,7 +41,7 @@ Pages.admin = {
               <button class="btn primary" type="submit">${UI.icon('check')}Enregistrer</button>
               <button class="btn" type="button" id="test-mail">${UI.icon('mail')}Envoyer un email de test</button>
             </div>
-            <p class="hint">Les emails (renouvellement d'ordonnance et stock bas) partent chaque matin vers 8h, à l'adresse renseignée dans chaque compte.</p>
+            <p class="hint">Les emails (renouvellement d'ordonnance, stock bas et rappels de vaccin) partent chaque matin vers 8h, à l'adresse renseignée dans chaque compte.</p>
           </form>
         </section>
 
