@@ -14,6 +14,7 @@ Pages.accueil = {
     const ordos = S.data.ordonnances.filter(o => o.actif === 'oui');
     const ren = ordos.map(o => ({ o, s: UI.statut(o) })).filter(x => x.s.k === 'bientot' || x.s.k === 'expiree').sort((a, b) => a.s.left - b.s.left);
     const stocks = ordos.map(o => ({ o, i: UI.stockInfo(o) })).filter(x => x.i && x.i.bas).sort((a, b) => a.i.stock - b.i.stock);
+    const vacs = Pages.vaccins ? Pages.vaccins.aPrevoir() : [];
     const notes = S.data.notes.filter(n => n.epinglee === 'oui').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     const last = Pages.signes.latest();
     const ordreMoment = { matin: 0, midi: 1, soir: 2, nuit: 3 };
@@ -62,7 +63,8 @@ Pages.accueil = {
           <div class="mini-list">
             ${ren.map(x => `<a class="mini-item" href="#ordonnances" style="color:inherit"><div class="lbl"><b>📄 ${UI.esc(x.o.medicament)}</b><span class="muted small">Ordonnance · fin ${UI.esc(UI.fmtD(x.s.fin))}</span></div>${UI.badge(x.s.cls, x.s.label)}</a>`).join('')}
             ${stocks.map(x => `<button type="button" class="mini-item badge-row" data-stock="${x.o.id}"><div class="lbl"><b>💊 ${UI.esc(x.o.medicament)}</b><span class="muted small">Stock bas${x.i.fin ? ' · épuisé vers le ' + UI.esc(UI.fmtD(x.i.fin)) : ''}</span></div>${UI.badge(x.i.cls, x.i.label)}</button>`).join('')}
-            ${!ren.length && !stocks.length ? '<p class="muted">Rien à prévoir : ordonnances valides et stocks suffisants.</p>' : ''}
+            ${vacs.map(g => `<a class="mini-item" href="#vaccins" style="color:inherit"><div class="lbl"><b>💉 ${UI.esc(g.nom)}</b><span class="muted small">Rappel de vaccin · ${UI.esc(UI.fmtD(g.derniere.rappel_date))}</span></div>${UI.badge(g.statut.cls, g.statut.court)}</a>`).join('')}
+            ${!ren.length && !stocks.length && !vacs.length ? '<p class="muted">Rien à prévoir : ordonnances valides, stocks suffisants et vaccins à jour.</p>' : ''}
           </div>
         </section>
 
