@@ -62,9 +62,11 @@ const Export = {
         y += size + 8;
       }
       if (s.image) {
-        const h = (W - 2 * M) * 0.42;
-        if (y + h > H - 20) { doc.addPage(); y = 18; }
-        doc.addImage(s.image, 'PNG', M, y, W - 2 * M, h); y += h + 4;
+        const ratio = s.imageRatio || 0.42;
+        let iw = W - 2 * M, ih = iw * ratio;
+        if (ih > H - 40) { ih = H - 40; iw = ih / ratio; }
+        if (y + ih > H - 20) { doc.addPage(); y = 18; }
+        doc.addImage(s.image, 'PNG', M, y, iw, ih); y += ih + 4;
       }
       if (s.rows && s.rows.length) {
         doc.autoTable({
@@ -87,7 +89,7 @@ const Export = {
 
   /** Les polices PDF standard ne gèrent que le Latin-1 : on remplace le reste. */
   pdfSafe(s) {
-    return String(s ?? '').replace(/[≥]/g, '>=').replace(/[≤]/g, '<=').replace(/[–—]/g, '-').replace(/[’]/g, "'")
+    return String(s ?? '').replace(/[≥]/g, '>=').replace(/[≤]/g, '<=').replace(/[–—]/g, '-').replace(/[’]/g, "'").replace(/→/g, '->').replace(/⭐/g, '*')
       .replace(/[^\x00-\xFF]/g, '');
   }
 };
