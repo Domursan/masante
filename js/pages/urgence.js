@@ -28,8 +28,17 @@ Pages.urgence = {
     return a >= 0 ? `${a} ans` : '';
   },
 
+  /** Événements de l'historique marqués « importants » (les plus récents d'abord). */
+  antecedents() {
+    if (!Pages.historique || !S.data.historique) return [];
+    const H = Pages.historique;
+    return S.data.historique.filter(h => h.important === 'oui')
+      .sort((a, b) => b.date_debut.localeCompare(a.date_debut))
+      .map(h => ({ titre: h.titre, type: H.type(h).label, e: H.type(h).e, periode: H.periode(h), diagnostic: h.diagnostic || '' }));
+  },
+
   snapshot() {
-    return { user: { id: S.viewing.id, prenom: S.viewing.prenom, nom: S.viewing.nom, identifiant: S.viewing.identifiant }, fiche: this.fiche(), traitements: this.traitements(), maj: UI.nowDT() };
+    return { user: { id: S.viewing.id, prenom: S.viewing.prenom, nom: S.viewing.nom, identifiant: S.viewing.identifiant }, fiche: this.fiche(), traitements: this.traitements(), antecedents: this.antecedents(), maj: UI.nowDT() };
   },
 
   /* ---------- Copie locale (accès hors connexion) ---------- */
@@ -55,6 +64,7 @@ Pages.urgence = {
     if (f.groupe_sanguin) l.push(`Groupe sanguin : ${f.groupe_sanguin}`);
     if (f.allergies) l.push(`ALLERGIES : ${f.allergies}`);
     if (f.pathologies) l.push(`Pathologies : ${f.pathologies}`);
+    if ((snap.antecedents || []).length) l.push('Antécédents : ' + snap.antecedents.map(a => `${a.titre} (${a.periode})`).join(' ; '));
     if (snap.traitements.length) l.push('Traitements : ' + snap.traitements.map(t => `${t.medicament} ${t.dosage} (${t.categorie === 'reserve' ? 'si besoin' : t.poso})`).join(' ; '));
     if (f.traitements_autres) l.push(`Autres : ${f.traitements_autres}`);
     if (f.dispositifs) l.push(`Dispositifs : ${f.dispositifs}`);
@@ -92,7 +102,8 @@ Pages.urgence = {
           ${f.groupe_sanguin ? `<span class="u-groupe">🩸 ${UI.esc(f.groupe_sanguin)}</span>` : ''}
           ${f.poids ? ` · ${UI.esc(f.poids)} kg` : ''}${f.taille ? ` · ${UI.esc(f.taille)} cm` : ''}</p>
         ${bloc('⚠️ Allergies', f.allergies ? `<p>${UI.esc(f.allergies)}</p>` : '<p>Aucune allergie connue</p>', 'u-alerte')}
-        ${bloc('Pathologies / antécédents', f.pathologies ? `<p>${UI.esc(f.pathologies)}</p>` : '')}
+        ${bloc('Pathologies / antécédents', f.pathologies || (snap.antecedents || []).length
+          ? `${f.pathologies ? `<p>${UI.esc(f.pathologies)}</p>` : ''}${(snap.antecedents || []).length ? `<ul>${snap.antecedents.map(a => `<li>${a.e} <b>${UI.esc(a.titre)}</b> — ${UI.esc(a.periode)}${a.diagnostic ? `<br><small>${UI.esc(a.diagnostic)}</small>` : ''}</li>`).join('')}</ul>` : ''}` : '')}
         ${bloc('Traitements en cours', snap.traitements.length || f.traitements_autres
           ? `<ul>${snap.traitements.map(t => `<li><b>${UI.esc(t.medicament)}</b> ${UI.esc(t.dosage)} — ${t.categorie === 'reserve' ? 'si besoin' : UI.esc(t.poso)}</li>`).join('')}</ul>${f.traitements_autres ? `<p>${UI.esc(f.traitements_autres)}</p>` : ''}` : '')}
         ${bloc('Dispositifs médicaux', f.dispositifs ? `<p>${UI.esc(f.dispositifs)}</p>` : '')}
@@ -148,6 +159,8 @@ Pages.urgence = {
               .filter(([, v]) => v).map(([k, v]) => `<div class="mini-item"><div class="lbl"><span class="muted small">${k}</span><b style="white-space:pre-wrap">${UI.esc(v)}</b></div></div>`).join('')}
             ${(f.contacts || []).filter(c => c.nom || c.tel).map(c => `<div class="mini-item"><div class="lbl"><span class="muted small">Contact${c.lien ? ' · ' + UI.esc(c.lien) : ''}</span><b>${UI.esc(c.nom)}</b></div><a class="btn sm" href="tel:${UI.esc(String(c.tel || '').replace(/[^\d+]/g, ''))}">📞 ${UI.esc(c.tel)}</a></div>`).join('')}
           </div>
+          ${snap.antecedents.length ? `<h3 style="margin:16px 0 8px">Antécédents importants <span class="muted small">(repris de l'historique médical, marqués ⭐)</span></h3>
+          <div class="mini-list">${snap.antecedents.map(a => `<a class="mini-item" href="#historique" style="color:inherit"><div class="lbl"><b>${a.e} ${UI.esc(a.titre)}</b><span class="muted small">${UI.esc(a.periode)}${a.diagnostic ? ' · ' + UI.esc(a.diagnostic) : ''}</span></div></a>`).join('')}</div>` : ''}
           <h3 style="margin:16px 0 8px">Traitements en cours <span class="muted small">(repris automatiquement des ordonnances actives)</span></h3>
           <div class="mini-list">${snap.traitements.length ? snap.traitements.map(t => `<div class="mini-item"><div class="lbl"><b>${UI.esc(t.medicament)}</b><span class="muted small">${UI.esc(t.dosage)}</span></div><span class="mono">${t.categorie === 'reserve' ? 'si besoin' : UI.esc(t.poso)}</span></div>`).join('') : '<p class="muted">Aucun traitement actif.</p>'}</div>
         </section>
@@ -254,6 +267,7 @@ Pages.urgence = {
     Export.pdf(`fiche-urgence_${Export.slug(UI.nomComplet(snap.user))}.pdf`, "Fiche d'urgence médicale", `Mise à jour : ${UI.fmtDT(f._maj || snap.maj)}`, [
       { titre: 'Informations vitales', headers: ['', ''], rows: lignes },
       { titre: 'Traitements en cours', headers: ['Médicament', 'Dosage', 'Posologie (M-Mi-S-N)'], rows: snap.traitements.map(t => [t.medicament, t.dosage, t.categorie === 'reserve' ? 'si besoin' : t.poso]) },
+      ...((snap.antecedents || []).length ? [{ titre: 'Antécédents importants', headers: ['Période', 'Événement', 'Diagnostic'], rows: snap.antecedents.map(a => [a.periode, a.titre, a.diagnostic]) }] : []),
       { titre: 'QR code', qr: this.texte(snap) }
     ]);
   }
