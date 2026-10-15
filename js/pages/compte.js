@@ -6,6 +6,7 @@ Pages.compte = {
   render(el) {
     const u = S.me;
     const p = Themes.prefs(u);
+    const sc = UI.semainierCfg();
     const radio = (name, val, label, cur) => `<label><input type="radio" name="${name}" value="${val}" ${cur === val ? 'checked' : ''}><span>${label}</span></label>`;
 
     el.innerHTML = `
@@ -52,6 +53,19 @@ Pages.compte = {
             </select></label>` : ''}
             <h3 style="margin:16px 0 8px">Appareils avec un code PIN</h3>
             <div id="pin-devices"><p class="muted small">Chargement…</p></div>
+          </section>
+          <section class="card">
+            <div class="card-head"><h2>${UI.icon('grid')} Semainier</h2></div>
+            <form class="form" id="f-semainier">
+              <label class="switch"><span>Je prépare un semainier<small>Les alertes de stock des traitements quotidiens vérifient s'il y aura assez de médicaments pour le prochain semainier</small></span><input type="checkbox" name="semainier_actif" ${sc.actif ? 'checked' : ''}><span class="track"></span></label>
+              <div class="grid2">
+                <label>Jour de préparation<select name="semainier_jour">${[1, 2, 3, 4, 5, 6, 0].map(j => `<option value="${j}" ${sc.jour === j ? 'selected' : ''}>${UI.JOURS_SEMAINE[j][0].toUpperCase() + UI.JOURS_SEMAINE[j].slice(1)}</option>`).join('')}</select></label>
+                <label>Nombre de jours<input type="number" name="semainier_duree" min="1" max="31" step="1" value="${sc.duree}"></label>
+              </div>
+              <label>Prévenir combien de jours avant<input type="number" name="semainier_alerte" min="0" max="6" step="1" value="${sc.alerte}"></label>
+              <p class="hint">Exemple : préparation le jeudi, alerte 3 jours avant → avertissement dès le lundi (accueil + email du matin) s'il manque des médicaments.</p>
+              <div class="btn-row"><button class="btn primary" type="submit">${UI.icon('check')}Enregistrer</button></div>
+            </form>
           </section>
         </div>
 
@@ -102,6 +116,16 @@ Pages.compte = {
         } catch (err) { /* déjà signalé */ }
       };
     }).catch(() => { const box = UI.$('#pin-devices', el); if (box) box.innerHTML = '<p class="muted small">Liste indisponible.</p>'; });
+
+    UI.$('#f-semainier', el).onsubmit = async e => {
+      e.preventDefault();
+      const d = UI.formData(e.target);
+      try {
+        const r = await App.write('saveSemainier', d, { self: true });
+        if (!S.ro) Object.assign(S.params, r);
+        UI.toast('Réglages du semainier enregistrés');
+      } catch (err) { /* déjà signalé */ }
+    };
 
     const photo = Photos.field(UI.$('#pf-profil', el), u.photo || '', { nom: 'profil', rond: true, self: true });
     UI.$('#f-profil', el).onsubmit = async e => {
