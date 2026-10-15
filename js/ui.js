@@ -80,6 +80,51 @@ const UI = (() => {
   }
   const stockBadge = o => { const i = stockInfo(o); return i ? badge(i.cls, i.label) : ''; };
 
+  /* ---------- Semainier ---------- */
+  const fmtQ = n => (Math.round(n * 100) / 100).toString().replace('.', ',');
+  const JOURS_SEMAINE = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  /** Réglages du semainier (enregistrés par utilisateur, renvoyés dans S.params). */
+  function semainierCfg() {
+    const P = (typeof S !== 'undefined' && S.params) || {};
+    const n = (v, d) => (v === '' || v == null || isNaN(Number(v)) ? d : Number(v));
+    return { actif: P.semainier_actif !== 'non', jour: n(P.semainier_jour, 4), duree: Math.max(1, n(P.semainier_duree, 7)), alerte: n(P.semainier_alerte, 3) };
+  }
+  /**
+   * Prochain semainier : pour chaque traitement quotidien actif, quantité nécessaire
+   * et quantité qui restera dans les boîtes le jour de la préparation.
+   * Le stock de l'app compte aussi les doses déjà dans le semainier en cours :
+   * on retire donc les doses prévues (non validées) d'ici le jour de préparation.
+   */
+  function semainier() {
+    const c = semainierCfg();
+    if (!c.actif || typeof S === 'undefined') return null;
+    const t = today();
+    const ecart = (c.jour - parse(t).getDay() + 7) % 7;
+    const debut = addDays(t, ecart), fin = addDays(debut, c.duree - 1);
+    const MOM = ['matin', 'midi', 'soir', 'nuit'];
+    const prisAuj = {};
+    S.data.prises.forEach(p => { if (p.date === t && p.statut === 'pris') prisAuj[p.ordonnance_id + '|' + p.moment] = true; });
+    const lignes = S.data.ordonnances
+      .filter(o => o.actif === 'oui' && o.categorie !== 'reserve' && !(o.date_ordonnance && o.date_ordonnance.slice(0, 10) > fin))
+      .map(o => {
+        const parJour = MOM.reduce((a, m) => a + qty(o[m]), 0);
+        if (!parJour) return null;
+        const resteAuj = MOM.reduce((a, m) => a + (qty(o[m]) && !prisAuj[o.id + '|' + m] ? qty(o[m]) : 0), 0);
+        const besoin = ecart === 0 ? parJour * c.duree - (parJour - resteAuj) : parJour * c.duree;
+        const avant = ecart === 0 ? 0 : resteAuj + parJour * (ecart - 1);
+        const suivi = o.stock !== '' && o.stock != null;
+        const dispo = suivi ? Math.max(0, Number(o.stock) - avant) : null;
+        return { o, parJour, besoin, dispo, manque: suivi ? Math.max(0, besoin - dispo) : 0, suivi };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.manque - a.manque || a.o.medicament.localeCompare(b.o.medicament));
+    return {
+      cfg: c, debut, fin, ecart, jourNom: JOURS_SEMAINE[c.jour],
+      alerte: ecart <= c.alerte, lignes,
+      manquants: lignes.filter(l => l.manque > 0), nonSuivis: lignes.filter(l => !l.suivi)
+    };
+  }
+
   const badgeIcon = { ok: 'check', warn: 'alert', danger: 'x', '': 'clock' };
   const badge = (cls, label) => `<span class="badge ${cls}">${icon(badgeIcon[cls] || 'clock')}${esc(label)}</span>`;
 
@@ -226,7 +271,7 @@ const UI = (() => {
 
   return {
     $, $$, esc, pad, isoDate, isoDT, today, nowDT, nowTime, parse, fmtD, fmtT, fmtDT, fmtLong, addDays, daysBetween, num,
-    finValidite, statut, badge, qty, stockInfo, stockBadge, icon, toast, loader, modal, confirm, formData, empty, avatarHtml, fillAvatars, nomComplet
+    finValidite, statut, badge, qty, stockInfo, stockBadge, semainier, semainierCfg, fmtQ, JOURS_SEMAINE, icon, toast, loader, modal, confirm, formData, empty, avatarHtml, fillAvatars, nomComplet
   };
 })();
 
