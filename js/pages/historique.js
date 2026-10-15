@@ -5,7 +5,6 @@
  */
 const HISTO_TYPES = {
   maladie:         { label: 'Maladie / pathologie',     e: '🩺', c: '#D55E00' },
-  allergie:        { label: 'Allergie',                 e: '🤧', c: '#994D11' },
   hospitalisation: { label: 'Hospitalisation',          e: '🏥', c: '#CC3311' },
   operation:       { label: 'Opération / intervention', e: '⚕️', c: '#AA3377' },
   consultation:    { label: 'Consultation',             e: '👨‍⚕️', c: '#0072B2' },
@@ -14,6 +13,10 @@ const HISTO_TYPES = {
   accident:        { label: 'Accident / blessure',      e: '🩹', c: '#E69F00' },
   vaccin:          { label: 'Vaccin',                   e: '💉', c: '#44AA99' },
   grossesse:       { label: 'Grossesse',                e: '🤰', c: '#CC79A7' },
+  allergie:        { label: 'Allergie',                 e: '🤧', c: '#994D11' },
+  // ➕ Pour ajouter une catégorie : copie une ligne ci-dessus (avec sa virgule finale),
+  //    change la clé (minuscules, sans accent ni espace), le libellé, l'emoji et la couleur.
+  //    Garde « autre » en dernier. Aucune modification n'est nécessaire dans Code.gs.
   autre:           { label: 'Autre',                    e: '📌', c: '#7A7A7A' }
 };
 const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
@@ -69,9 +72,20 @@ Pages.historique = {
     return [an ? `${an} an${an > 1 ? 's' : ''}` : '', r ? `${r} mois` : ''].filter(Boolean).join(' ');
   },
 
+  /** Événements saisis + injections de la page Vaccins (affichées en lecture seule). */
+  tous() {
+    const vac = (S.data.vaccins || []).map(v => ({
+      id: 'vac_' + v.id, _vaccin: v.id, type: 'vaccin', titre: v.vaccin + (v.dose ? ` (${v.dose})` : ''),
+      date_debut: v.date, precision_debut: 'jour', date_fin: '', en_cours: 'non', important: 'non',
+      diagnostic: v.maladies ? 'Protège contre : ' + v.maladies : '', description: '', traitements: v.produit || '',
+      praticien: v.praticien || '', lieu: v.lieu || '', suivi: v.notes || '', photo: ''
+    }));
+    return S.data.historique.concat(vac);
+  },
+
   filtres() {
     const q = this.q.toLowerCase();
-    return S.data.historique.filter(h =>
+    return this.tous().filter(h =>
       (!this.filtre || (h.type || 'autre') === this.filtre) &&
       (!this.importants || h.important === 'oui') &&
       (!q || [h.titre, h.description, h.diagnostic, h.traitements, h.praticien, h.lieu, h.suivi].join(' ').toLowerCase().includes(q)));
@@ -123,7 +137,7 @@ Pages.historique = {
   /* ---------- Page ---------- */
   render(el) {
     this.el = el;
-    const all = S.data.historique;
+    const all = this.tous();
     const enCours = all.filter(h => h.en_cours === 'oui').length;
     el.innerHTML = `
       <div class="page-head">
@@ -168,8 +182,9 @@ Pages.historique = {
   corps() {
     const el = this.el;
     if (!el || !el.isConnected) return;
-    if (!S.data.historique.length || !UI.$('#h-body', el)) return this.render(el);
-    const types = Object.keys(HISTO_TYPES).filter(k => S.data.historique.some(h => (h.type || 'autre') === k));
+    const tous = this.tous();
+    if (!tous.length || !UI.$('#h-body', el)) return this.render(el);
+    const types = Object.keys(HISTO_TYPES).filter(k => tous.some(h => (h.type || 'autre') === k));
     if (this.filtre && !types.includes(this.filtre)) this.filtre = '';
     const chips = UI.$('#h-chips', el);
     chips.innerHTML = `<button class="chip ${!this.filtre ? 'active' : ''}" data-f="">Tous</button>` +
@@ -287,7 +302,7 @@ Pages.historique = {
     scroll.onclick = e => {
       if (drag && drag.bouge) return;
       const b = e.target.closest('[data-id]');
-      if (b) this.detail(S.data.historique.find(h => h.id === b.dataset.id));
+      if (b) this.detail(this.tous().find(h => h.id === b.dataset.id));
     };
   },
 
@@ -314,13 +329,18 @@ Pages.historique = {
     </div>`;
     box.onclick = e => {
       const b = e.target.closest('[data-id]');
-      if (b) this.detail(S.data.historique.find(h => h.id === b.dataset.id));
+      if (b) this.detail(this.tous().find(h => h.id === b.dataset.id));
     };
   },
 
   /* ---------- Détail ---------- */
   detail(h) {
     if (!h) return;
+    if (h._vaccin) {
+      const v = (S.data.vaccins || []).find(x => x.id === h._vaccin);
+      if (v && Pages.vaccins) return Pages.vaccins.detail(v);
+      return;
+    }
     const t = this.type(h), d = this.duree(h);
     const champ = (l, v) => v ? `<div class="histo-champ"><span>${l}</span><p>${UI.esc(v)}</p></div>` : '';
     const actions = [{ label: 'Fermer', cls: 'ghost' }];
