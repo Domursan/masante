@@ -6,7 +6,7 @@
 Pages.rapport = {
   du: null,
   au: null,
-  sections: { fiche: true, traitements: true, observance: true, signes: true, detail: false, schema: true, notes: false },
+  sections: { fiche: true, traitements: true, observance: true, signes: true, detail: false, schema: true, historique: true, notes: false },
   LIMITE_JOURS: 180,
 
   /* ---------- Calculs ---------- */
@@ -61,6 +61,7 @@ Pages.rapport = {
       ['signes', 'Signes vitaux', 'statistiques et graphiques par signe'],
       ['detail', 'Détail des mesures', 'tableau de toutes les valeurs de la période'],
       ['schema', 'Schéma de correction', "paliers d'insuline et corrections indiquées"],
+      ['historique', 'Historique médical', 'frise chronologique et liste des événements (toute la vie)'],
       ['notes', 'Notes épinglées', '']
     ];
 
@@ -179,6 +180,14 @@ Pages.rapport = {
         rows: S.data.schema.slice().sort((a, b) => UI.num(a.glycemie_min || -1e9) - UI.num(b.glycemie_min || -1e9))
           .map(l => [l.glycemie_min || '-', l.glycemie_max || '-', l.unites || '0', l.message || ''])
       });
+    }
+
+    if (sec.historique && Pages.historique && S.data.historique.length) {
+      const H = Pages.historique, liste = S.data.historique;
+      const img = H.image(liste);
+      sections.push({ titre: 'Historique médical', image: img && img.url, imageRatio: img && img.ratio });
+      sections.push({ titre: 'Antécédents (* = important)', headers: ['Période', 'Type', 'Événement', 'Diagnostic', 'Traitements'], rows: H.lignesPdf(liste),
+        colStyles: { 0: { cellWidth: 34 }, 1: { cellWidth: 26 } } });
     }
 
     if (sec.notes) {
