@@ -35,6 +35,16 @@ const API = {
     }
     let j;
     try { j = await res.json(); } catch (e) { throw new Error('Réponse invalide du serveur (vérifie le déploiement Apps Script).'); }
+        // Requête arrivée en GET (doGet) : pas de données -> on renvoie la même requête (2 essais max)
+    if (j && j.ok && j.app && !('data' in j)) {
+      this._essais = (this._essais || 0) + 1;
+      if (this._essais <= 2) {
+        await new Promise(r => setTimeout(r, 600));
+        try { return await this.call(action, data); } finally { this._essais = 0; }
+      }
+      this._essais = 0;
+      throw new Error('Le serveur n\'a pas renvoyé de données, réessaie dans un instant.');
+    }
     if (!j.ok) {
       if (j.error === 'AUTH') {
         if (typeof App !== 'undefined' && action !== 'bootstrap') App.sessionExpired();
