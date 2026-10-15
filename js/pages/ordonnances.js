@@ -29,25 +29,25 @@ Pages.ordonnances = {
           `<button class="chip ${this.filtre === k ? 'active' : ''}" data-f="${k}">${l} (${nb(k)})</button>`).join('')}</div>
         <label class="search"><span class="sr-only">Rechercher</span>${UI.icon('search')}<input type="search" id="ord-q" placeholder="Rechercher un médicament…" value="${UI.esc(this.q)}"></label>
       </div>
-      <div class="card">${list.length ? `<div class="table-wrap"><table class="table resp">
-        <thead><tr><th></th><th>Médicament</th><th>Dosage</th><th>Catégorie</th><th>Date ordonnance</th><th>Validité ordonnance</th><th>Posologie (M-Mi-S-N)</th><th>Stock</th><th></th></tr></thead>
+      <div class="card">${list.length ? `<div class="table-wrap"><table class="table resp table-ord">
+        <thead><tr><th class="c-photo"></th><th>Médicament</th><th>Ordonnance</th><th class="c-poso">Posologie<small>M-Mi-S-N</small></th><th>Stock</th><th class="c-act"></th></tr></thead>
         <tbody>${list.map(o => {
           const st = UI.statut(o);
+          const si = UI.stockInfo(o);
           return `<tr class="${o.actif === 'oui' ? '' : 'archived'}">
-            <td data-label="Photo">${o.photo ? `<img class="thumb" data-ref="${UI.esc(o.photo)}" data-zoom="${UI.esc(o.photo)}" alt="Photo de l'ordonnance" hidden>` : `<span class="thumb-empty">${UI.icon('file')}</span>`}</td>
-            <td data-label="Médicament" class="cell-title"><b>${UI.esc(o.medicament)}</b>${o.remarque ? `<br><span class="muted small">${UI.esc(o.remarque)}</span>` : ''}</td>
-            <td data-label="Dosage">${UI.esc(o.dosage || '—')}</td>
-            <td data-label="Catégorie"><span class="badge p">${CATEGORIES[o.categorie] || 'Constant'}</span></td>
-            <td data-label="Date ordonnance">${UI.esc(UI.fmtD(o.date_ordonnance))}</td>
-            <td data-label="Validité">${UI.esc(this.validiteTxt(o))}<br>${UI.badge(st.cls, st.label + (st.fin && o.type_validite === 'duree' ? ' · ' + UI.fmtD(st.fin) : ''))}</td>
-            <td data-label="Posologie"><span class="mono">${UI.esc(this.posologie(o))}</span></td>
-            <td data-label="Stock">${UI.stockInfo(o) ? `<button type="button" class="badge ${UI.stockInfo(o).cls} badge-btn" data-stock="${o.id}">${UI.esc(UI.stockInfo(o).label)}</button>` : '<span class="muted small">Non suivi</span>'}</td>
-            <td class="actions w" data-label="">
-              <button class="icon-btn" data-edit="${o.id}" aria-label="Modifier">${UI.icon('edit')}</button>
+            <td data-label="Photo" class="c-photo">${o.photo ? `<img class="thumb" data-ref="${UI.esc(o.photo)}" data-zoom="${UI.esc(o.photo)}" alt="Photo de l'ordonnance" hidden>` : `<span class="thumb-empty">${UI.icon('file')}</span>`}</td>
+            <td data-label="Médicament" class="cell-title"><div class="ord-med"><b>${UI.esc(o.medicament)}</b>${o.dosage ? ` <span class="ord-dose">${UI.esc(o.dosage)}</span>` : ''}
+              <div class="ord-meta"><span class="badge p">${CATEGORIES[o.categorie] || 'Constant'}</span></div>
+              ${o.remarque ? `<span class="muted small ord-rem">${UI.esc(o.remarque)}</span>` : ''}</div></td>
+            <td data-label="Ordonnance"><div class="ord-val"><span class="small">Du ${UI.esc(UI.fmtD(o.date_ordonnance))}</span><span class="small muted">${UI.esc(this.validiteTxt(o))}</span>${UI.badge(st.cls, st.label + (st.fin && o.type_validite === 'duree' ? ' · ' + UI.fmtD(st.fin) : ''))}</div></td>
+            <td data-label="Posologie" class="c-poso"><span class="mono">${UI.esc(this.posologie(o))}</span></td>
+            <td data-label="Stock">${si ? `<button type="button" class="badge ${si.cls} badge-btn" data-stock="${o.id}">${UI.esc(si.label)}</button>` : '<span class="muted small">Non suivi</span>'}</td>
+            <td class="actions c-act w" data-label=""><div class="ord-actions">
+              <button class="icon-btn" data-edit="${o.id}" aria-label="Modifier" title="Modifier">${UI.icon('edit')}</button>
               <button class="icon-btn" data-stock="${o.id}" aria-label="Stock" title="Stock / nouvelle boîte">${UI.icon('box')}</button>
               <button class="icon-btn" data-arch="${o.id}" aria-label="${o.actif === 'oui' ? 'Archiver' : 'Réactiver'}" title="${o.actif === 'oui' ? 'Archiver' : 'Réactiver'}">${UI.icon(o.actif === 'oui' ? 'archive' : 'restore')}</button>
-              <button class="icon-btn danger" data-del="${o.id}" aria-label="Supprimer">${UI.icon('trash')}</button>
-            </td></tr>`;
+              <button class="icon-btn danger" data-del="${o.id}" aria-label="Supprimer" title="Supprimer">${UI.icon('trash')}</button>
+            </div></td></tr>`;
         }).join('')}</tbody></table></div>`
         : UI.empty(this.q ? 'Aucun résultat.' : 'Aucune ordonnance ici.', !this.q && this.filtre !== 'archivees' ? `<button class="btn primary w" data-add>${UI.icon('plus')}Ajouter une ordonnance</button>` : '')}</div>`;
 
