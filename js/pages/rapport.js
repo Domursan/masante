@@ -6,7 +6,7 @@
 Pages.rapport = {
   du: null,
   au: null,
-  sections: { fiche: true, traitements: true, observance: true, signes: true, detail: false, schema: true, historique: true, notes: false },
+  sections: { fiche: true, traitements: true, observance: true, signes: true, detail: false, schema: true, historique: true, vaccins: true, notes: false },
   LIMITE_JOURS: 180,
 
   /* ---------- Calculs ---------- */
@@ -62,6 +62,7 @@ Pages.rapport = {
       ['detail', 'Détail des mesures', 'tableau de toutes les valeurs de la période'],
       ['schema', 'Schéma de correction', "paliers d'insuline et corrections indiquées"],
       ['historique', 'Historique médical', 'frise chronologique et liste des événements (toute la vie)'],
+      ['vaccins', 'Vaccinations', 'carnet de vaccination et statut des rappels'],
       ['notes', 'Notes épinglées', '']
     ];
 
@@ -182,12 +183,17 @@ Pages.rapport = {
       });
     }
 
-    if (sec.historique && Pages.historique && S.data.historique.length) {
-      const H = Pages.historique, liste = S.data.historique;
+    if (sec.historique && Pages.historique && Pages.historique.tous().length) {
+      const H = Pages.historique, liste = H.tous();
       const img = H.image(liste);
       sections.push({ titre: 'Historique médical', image: img && img.url, imageRatio: img && img.ratio });
       sections.push({ titre: 'Antécédents (* = important)', headers: ['Période', 'Type', 'Événement', 'Diagnostic', 'Traitements'], rows: H.lignesPdf(liste),
         colStyles: { 0: { cellWidth: 34 }, 1: { cellWidth: 26 } } });
+    }
+
+    if (sec.vaccins && Pages.vaccins && (S.data.vaccins || []).length) {
+      sections.push({ titre: 'Vaccinations', headers: ['Vaccin', 'Injections', 'Prochain rappel', 'Statut'], rows: Pages.vaccins.lignesPdf(),
+        colStyles: { 0: { cellWidth: 52 }, 2: { cellWidth: 26 }, 3: { cellWidth: 26 } } });
     }
 
     if (sec.notes) {
