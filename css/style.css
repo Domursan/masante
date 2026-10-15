@@ -640,3 +640,35 @@ fieldset .grid3 + .grid3 { padding-top: 10px; border-top: 1px dashed var(--borde
 .vac-dose .ic { margin-left: auto; color: var(--muted); }
 tr.row-click { cursor: pointer; }
 tr.row-click:hover td { background: var(--surface2); }
+/* ---------- v1.5 : tableau des ordonnances sans défilement horizontal ---------- */
+.table-ord { table-layout: auto; }
+.table-ord th { white-space: normal; vertical-align: bottom; }
+.table-ord th small { display: block; font-size: .7rem; letter-spacing: .02em; text-transform: none; font-weight: 700; }
+.table-ord td { vertical-align: top; overflow-wrap: anywhere; }
+.table-ord .badge { white-space: normal; text-align: left; }
+.table-ord .c-photo { width: 52px; }
+.table-ord .c-photo .thumb, .table-ord .c-photo .thumb-empty { width: 40px; height: 40px; }
+.table-ord .c-poso { white-space: nowrap; }
+.table-ord .c-act { width: 1%; }
+.ord-med b { font-size: 1rem; }
+.ord-dose { font-weight: 700; color: var(--muted); }
+.ord-meta { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 2px; }
+.ord-rem { display: block; }
+.ord-val { display: grid; gap: 2px; justify-items: start; }
+.ord-actions { display: grid; grid-template-columns: repeat(2, 34px); gap: 2px; justify-content: end; }
+.ord-actions .icon-btn { width: 34px; height: 34px; }
+@media (min-width: 761px) {
+  .table-wrap:has(.table-ord) { overflow-x: visible; }
+}
+@media (min-width: 1200px) {
+  .ord-actions { grid-template-columns: repeat(4, 34px); }
+}
+@media (max-width: 760px) {
+  .table-ord .c-photo { width: 100%; }
+  .table-ord td { vertical-align: middle; }
+  .table-ord .ord-val { justify-items: end; text-align: right; }
+  .table-ord .ord-actions { display: flex; }
+  .table-ord .c-act { width: 100%; }
+  .table-ord .badge { white-space: nowrap; }
+  .table-ord td::before { flex: none; overflow-wrap: normal; }
+}
