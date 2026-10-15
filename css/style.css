@@ -610,3 +610,33 @@ fieldset .grid3 + .grid3 { padding-top: 10px; border-top: 1px dashed var(--borde
   .page-historique .toolbar > .btn-row { width: 100%; flex-wrap: nowrap; }
   .page-historique .search { max-width: none; }
 }
+
+/* ---------- v1.4 : vaccins ---------- */
+.vac-resume { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+@media (max-width: 640px) { .vac-resume { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.vac-stat { display: grid; gap: 2px; padding: 12px 14px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--muted); box-shadow: var(--shadow); }
+.vac-stat b { font-size: 1.6rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.vac-stat span { display: flex; align-items: center; gap: 5px; font-size: .82rem; font-weight: 700; color: var(--muted); }
+.vac-stat.danger { border-left-color: var(--danger); } .vac-stat.danger b, .vac-stat.danger span { color: var(--danger); }
+.vac-stat.warn { border-left-color: var(--warn); } .vac-stat.warn b, .vac-stat.warn span { color: var(--warn); }
+.vac-stat.ok { border-left-color: var(--ok); } .vac-stat.ok b, .vac-stat.ok span { color: var(--ok); }
+.vac-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); align-items: start; }
+.vac-grid .card + .card { margin-top: 0; }
+.vac-carte { display: grid; gap: 10px; border-top: 4px solid var(--border); }
+.vac-carte.retard { border-top-color: var(--danger); }
+.vac-carte.bientot { border-top-color: var(--warn); }
+.vac-carte.ok { border-top-color: var(--ok); }
+.vac-tete { display: flex; gap: 12px; align-items: flex-start; }
+.vac-ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--p-soft); font-size: 1.25rem; flex: none; }
+.vac-titre { display: grid; gap: 2px; min-width: 0; }
+.vac-titre h3 { font-size: 1.02rem; }
+.vac-etat .badge { white-space: normal; }
+.vac-doses { list-style: none; margin: 0; padding: 0 0 0 10px; border-left: 2px solid var(--border); display: grid; gap: 4px; }
+.vac-dose { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 8px; border: 0; border-radius: 8px; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; font-size: .9rem; }
+.vac-dose::before { content: ''; position: absolute; left: -16px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--muted); }
+.vac-dose.derniere::before { background: var(--p); border-color: var(--p); }
+.vac-dose:hover { background: var(--surface2); }
+.vac-dose .mono { flex: none; font-size: .85rem; }
+.vac-dose .ic { margin-left: auto; color: var(--muted); }
+tr.row-click { cursor: pointer; }
+tr.row-click:hover td { background: var(--surface2); }
