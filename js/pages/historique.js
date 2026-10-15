@@ -5,6 +5,7 @@
  */
 const HISTO_TYPES = {
   maladie:         { label: 'Maladie / pathologie',     e: '🩺', c: '#D55E00' },
+  allergie:        { label: 'Allergie',                 e: '🤧', c: '#994D11' },
   hospitalisation: { label: 'Hospitalisation',          e: '🏥', c: '#CC3311' },
   operation:       { label: 'Opération / intervention', e: '⚕️', c: '#AA3377' },
   consultation:    { label: 'Consultation',             e: '👨‍⚕️', c: '#0072B2' },
