@@ -13,7 +13,12 @@ Pages.accueil = {
     const restants = due.filter(x => !x.prise);
     const ordos = S.data.ordonnances.filter(o => o.actif === 'oui');
     const ren = ordos.map(o => ({ o, s: UI.statut(o) })).filter(x => x.s.k === 'bientot' || x.s.k === 'expiree').sort((a, b) => a.s.left - b.s.left);
-    const stocks = ordos.map(o => ({ o, i: UI.stockInfo(o) })).filter(x => x.i && x.i.bas).sort((a, b) => a.i.stock - b.i.stock);
+    const sem = UI.semainier();
+    // Avec le semainier actif, les traitements quotidiens sont surveillés par la carte « Prochain semainier » :
+    // l'alerte « stock bas » ne concerne plus que les médicaments en réserve.
+    const stocks = ordos.map(o => ({ o, i: UI.stockInfo(o) })).filter(x => x.i && x.i.bas && !(sem && x.i.parJour)).sort((a, b) => a.i.stock - b.i.stock);
+    const semAlerte = sem && sem.alerte && sem.manquants.length;
+    const quandSem = sem ? (sem.ecart === 0 ? "aujourd'hui" : sem.ecart === 1 ? 'demain' : UI.fmtLong(sem.debut)) : '';
     const vacs = Pages.vaccins ? Pages.vaccins.aPrevoir() : [];
     const notes = S.data.notes.filter(n => n.epinglee === 'oui').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     const last = Pages.signes.latest();
@@ -37,6 +42,20 @@ Pages.accueil = {
       </div>
 
       <div class="home-grid">
+        ${sem ? `<section class="card semainier-card">
+          <div class="card-head"><h2>${UI.icon('grid')} Prochain semainier</h2><span class="muted small">À préparer ${UI.esc(quandSem)}</span></div>
+          <p class="muted small" style="margin:0 0 8px">Du ${UI.esc(UI.fmtD(sem.debut))} au ${UI.esc(UI.fmtD(sem.fin))} · ${sem.cfg.duree} jour${sem.cfg.duree > 1 ? 's' : ''}</p>
+          ${sem.lignes.length ? (sem.manquants.length
+            ? UI.badge('danger', `Il manque ${sem.manquants.length} médicament${sem.manquants.length > 1 ? 's' : ''}`)
+            : UI.badge('ok', 'Tout est disponible')) : ''}
+          <div class="mini-list" style="margin-top:8px">
+            ${sem.lignes.length ? sem.lignes.map(l => `<button type="button" class="mini-item badge-row" data-stock="${l.o.id}"><div class="lbl"><b>💊 ${UI.esc(l.o.medicament)}</b><span class="muted small">${l.suivi
+                ? `Besoin ${UI.fmtQ(l.besoin)} · en boîte ${UI.fmtQ(l.dispo)}`
+                : `Besoin ${UI.fmtQ(l.besoin)} · stock non suivi`}</span></div>${!l.suivi ? UI.badge('', 'À vérifier') : l.manque > 0 ? UI.badge('danger', 'Manque ' + UI.fmtQ(l.manque)) : UI.badge('ok', 'OK')}</button>`).join('')
+              : '<p class="muted">Aucun traitement quotidien actif.</p>'}
+          </div>
+          ${sem.nonSuivis.length ? `<p class="hint" style="margin-top:8px">Active « Suivre le stock » dans l'ordonnance pour que le calcul soit fait.</p>` : ''}
+        </section>` : ''}
         <section class="card">
           <div class="card-head"><h2>${UI.icon('pill')} Aujourd'hui</h2><a href="#medicaments" class="btn sm">Tout voir</a></div>
           ${due.length ? `<div class="progress"><span style="width:${Math.round(faits / due.length * 100)}%"></span></div><p class="muted small" style="margin-top:6px">${faits} sur ${due.length} prises effectuées</p>` : ''}
@@ -62,9 +81,10 @@ Pages.accueil = {
           <div class="card-head"><h2>${UI.icon('alert')} À prévoir</h2></div>
           <div class="mini-list">
             ${ren.map(x => `<a class="mini-item" href="#ordonnances" style="color:inherit"><div class="lbl"><b>📄 ${UI.esc(x.o.medicament)}</b><span class="muted small">Ordonnance · fin ${UI.esc(UI.fmtD(x.s.fin))}</span></div>${UI.badge(x.s.cls, x.s.label)}</a>`).join('')}
+            ${semAlerte ? `<a class="mini-item" href="#accueil" style="color:inherit"><div class="lbl"><b>🗓️ Semainier ${UI.esc(quandSem)}</b><span class="muted small">${UI.esc(sem.manquants.map(l => l.o.medicament + ' (−' + UI.fmtQ(l.manque) + ')').join(', '))}</span></div>${UI.badge('danger', 'Manque')}</a>` : ''}
             ${stocks.map(x => `<button type="button" class="mini-item badge-row" data-stock="${x.o.id}"><div class="lbl"><b>💊 ${UI.esc(x.o.medicament)}</b><span class="muted small">Stock bas${x.i.fin ? ' · épuisé vers le ' + UI.esc(UI.fmtD(x.i.fin)) : ''}</span></div>${UI.badge(x.i.cls, x.i.label)}</button>`).join('')}
             ${vacs.map(g => `<a class="mini-item" href="#vaccins" style="color:inherit"><div class="lbl"><b>💉 ${UI.esc(g.nom)}</b><span class="muted small">Rappel de vaccin · ${UI.esc(UI.fmtD(g.derniere.rappel_date))}</span></div>${UI.badge(g.statut.cls, g.statut.court)}</a>`).join('')}
-            ${!ren.length && !stocks.length && !vacs.length ? '<p class="muted">Rien à prévoir : ordonnances valides, stocks suffisants et vaccins à jour.</p>' : ''}
+            ${!ren.length && !stocks.length && !vacs.length && !semAlerte ? '<p class="muted">Rien à prévoir : ordonnances valides, stocks suffisants et vaccins à jour.</p>' : ''}
           </div>
         </section>
 
