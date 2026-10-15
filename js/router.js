@@ -7,6 +7,7 @@ const Router = {
     { id: 'medicaments', label: 'Médicaments', court: 'Médocs', icon: 'pill', bottom: true },
     { id: 'signes', label: 'Signes vitaux', court: 'Signes', icon: 'activity', bottom: true },
     { id: 'ordonnances', label: 'Ordonnances', court: 'Ordos', icon: 'file', bottom: true },
+    { id: 'historique', label: 'Historique médical', court: 'Historique', icon: 'timeline' },
     { id: 'notes', label: 'Notes', icon: 'note', bottom: true },
     { id: 'urgence', label: "Fiche d'urgence", icon: 'cross' },
     { id: 'rapport', label: 'Rapport médecin', icon: 'report' },
@@ -26,8 +27,25 @@ const Router = {
     ).join('') + `<div class="side-foot"><button class="side-link" id="side-logout">${UI.icon('logout')}<span>Déconnexion</span></button></div>`;
     UI.$('#bottomnav').innerHTML = routes.filter(r => r.bottom).map(r =>
       `<a href="#${r.id}" data-r="${r.id}">${UI.icon(r.icon)}<span>${r.court || r.label}</span></a>`
-    ).join('');
+    ).join('') + `<button type="button" id="nav-plus" aria-label="Plus de pages">${UI.icon('grid')}<span>Plus</span></button>`;
     UI.$('#side-logout').onclick = () => App.logout();
+    UI.$('#nav-plus').onclick = () => this.menuPlus();
+  },
+
+  /** Téléphone : menu des pages qui ne tiennent pas dans la barre du bas. */
+  menuPlus() {
+    const cur = this.current();
+    const autres = this.visible().filter(r => !r.bottom);
+    const m = UI.modal({
+      title: 'Menu',
+      body: `<div class="plus-grid">${autres.map(r =>
+        `<a href="#${r.id}" class="plus-item ${r.id === cur ? 'active' : ''}">${UI.icon(r.icon)}<span>${r.label}</span></a>`).join('')}
+        <button type="button" class="plus-item" data-logout>${UI.icon('logout')}<span>Déconnexion</span></button></div>`
+    });
+    m.body.addEventListener('click', e => {
+      if (e.target.closest('a')) m.close();
+      if (e.target.closest('[data-logout]')) { m.close(); App.logout(); }
+    });
   },
 
   current() {
@@ -41,6 +59,8 @@ const Router = {
     const id = this.current();
     if (this.prev && Pages[this.prev] && Pages[this.prev].destroy) Pages[this.prev].destroy();
     UI.$$('[data-r]').forEach(a => a.classList.toggle('active', a.dataset.r === id));
+    const plus = UI.$('#nav-plus');
+    if (plus) plus.classList.toggle('active', !(this.ROUTES.find(r => r.id === id) || {}).bottom);
     const el = UI.$('#page');
     el.innerHTML = '';
     el.className = 'page page-' + id;
