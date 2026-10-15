@@ -8,6 +8,7 @@ const Router = {
     { id: 'signes', label: 'Signes vitaux', court: 'Signes', icon: 'activity', bottom: true },
     { id: 'ordonnances', label: 'Ordonnances', court: 'Ordos', icon: 'file', bottom: true },
     { id: 'historique', label: 'Historique médical', court: 'Historique', icon: 'timeline' },
+    { id: 'vaccins', label: 'Vaccins', icon: 'syringe' },
     { id: 'notes', label: 'Notes', icon: 'note', bottom: true },
     { id: 'urgence', label: "Fiche d'urgence", icon: 'cross' },
     { id: 'rapport', label: 'Rapport médecin', icon: 'report' },
